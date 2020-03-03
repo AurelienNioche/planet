@@ -16,13 +16,13 @@ import tensorflow as tf
 
 
 def bound_action(action, strategy):
-  if strategy == 'none':
-    pass
-  elif strategy == 'clip':
-    forward = tf.stop_gradient(tf.clip_by_value(action, -1.0, 1.0))
-    action = action - tf.stop_gradient(action) + forward
-  elif strategy == 'tanh':
-    action = tf.tanh(action)
-  else:
-    raise NotImplementedError(strategy)
-  return action
+    if strategy == 'none':
+        pass
+    elif strategy == 'clip':
+        forward = tf.stop_gradient(tf.clip_by_value(action, -1.0, 1.0))
+        action = action - tf.stop_gradient(action) + forward
+    elif strategy == 'tanh':
+        action = tf.tanh(action)
+    else:
+        raise NotImplementedError(strategy)
+    return action

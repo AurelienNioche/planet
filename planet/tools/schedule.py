@@ -21,45 +21,46 @@ import tensorflow as tf
 
 
 def binary(step, batch_size, after, every, until):
-  # https://www.desmos.com/calculator/csbhr5cjzz
-  offset_step = step - after
-  phase = tf.less(offset_step % every, batch_size)
-  active = tf.greater_equal(step, after)
-  if until > 0:
-      active = tf.logical_and(active, tf.less(step, until))
-  result = tf.logical_and(phase, active)
-  result.set_shape(tf.TensorShape([]))
-  return result
+    # https://www.desmos.com/calculator/csbhr5cjzz
+    offset_step = step - after
+    phase = tf.less(offset_step % every, batch_size)
+    active = tf.greater_equal(step, after)
+    if until > 0:
+        active = tf.logical_and(active, tf.less(step, until))
+    result = tf.logical_and(phase, active)
+    result.set_shape(tf.TensorShape([]))
+    return result
 
 
 def linear(step, ramp, min=None, max=None):
-  # https://www.desmos.com/calculator/nrumhgvxql
-  if ramp == 0:
-    result = tf.constant(1, tf.float32)
-  if ramp > 0:
-    result = tf.minimum(tf.to_float(step) / tf.to_float(ramp), 1)
-  if ramp < 0:
-    result = 1 - linear(step, abs(ramp))
-  if min is not None and max is not None:
-    assert min <= max
-  if min is not None:
-    assert 0 <= min <= 1
-    result = tf.maximum(min, result)
-  if max is not None:
-    assert 0 <= min <= 1
-    result = tf.minimum(result, max)
-  result.set_shape(tf.TensorShape([]))
-  return result
+    # https://www.desmos.com/calculator/nrumhgvxql
+    if ramp == 0:
+        result = tf.constant(1, tf.float32)
+    if ramp > 0:
+        result = tf.minimum(tf.to_float(step) / tf.to_float(ramp), 1)
+    if ramp < 0:
+        result = 1 - linear(step, abs(ramp))
+    if min is not None and max is not None:
+        assert min <= max
+    if min is not None:
+        assert 0 <= min <= 1
+        result = tf.maximum(min, result)
+    if max is not None:
+        assert 0 <= min <= 1
+        result = tf.minimum(result, max)
+    result.set_shape(tf.TensorShape([]))
+    return result
 
 
 def linear_reset(step, ramp, after, every):
-  # https://www.desmos.com/calculator/motbnqhacw
-  assert every > ramp, (every, ramp)  # Would never reach max value.
-  assert not (every != np.inf and after == np.inf), (every, after)
-  step, ramp, after, every = [
-      tf.to_float(x) for x in (step, ramp, after, every)]
-  before = tf.to_float(tf.less(step, after)) * step
-  after = tf.to_float(tf.greater_equal(step, after)) * ((step - after) % every)
-  result = tf.minimum((before + after) / ramp, 1)
-  result.set_shape(tf.TensorShape([]))
-  return result
+    # https://www.desmos.com/calculator/motbnqhacw
+    assert every > ramp, (every, ramp)  # Would never reach max value.
+    assert not (every != np.inf and after == np.inf), (every, after)
+    step, ramp, after, every = [
+        tf.to_float(x) for x in (step, ramp, after, every)]
+    before = tf.to_float(tf.less(step, after)) * step
+    after = tf.to_float(tf.greater_equal(step, after)) * (
+                (step - after) % every)
+    result = tf.minimum((before + after) / ramp, 1)
+    result.set_shape(tf.TensorShape([]))
+    return result

@@ -30,14 +30,14 @@ setuptools.setup(
     license='Apache 2.0',
     url='http://github.com/google-research/planet',
     install_requires=[
-        'dm_control',
         'gym',
         'matplotlib',
         'ruamel.yaml',
         'scikit-image',
         'scipy',
-        'tensorflow-gpu==1.13.1',
-        'tensorflow_probability==0.6.0',
+        'tensorflow',
+        # 'tensorflow-gpu==1.13.1',
+        # 'tensorflow_probability==0.6.0',
     ],
     packages=setuptools.find_packages(),
     classifiers=[

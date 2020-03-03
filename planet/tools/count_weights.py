@@ -23,7 +23,7 @@ import tensorflow as tf
 
 
 def count_weights(scope=None, exclude=None, graph=None):
-  """Count learnable parameters.
+    """Count learnable parameters.
 
   Args:
     scope: Resrict the count to a variable scope.
@@ -33,19 +33,19 @@ def count_weights(scope=None, exclude=None, graph=None):
   Returns:
     Number of learnable parameters as integer.
   """
-  if scope:
-    scope = scope if scope.endswith('/') else scope + '/'
-  graph = graph or tf.get_default_graph()
-  vars_ = graph.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-  if scope:
-    vars_ = [var for var in vars_ if var.name.startswith(scope)]
-  if exclude:
-    exclude = re.compile(exclude)
-    vars_ = [var for var in vars_ if not exclude.match(var.name)]
-  shapes = []
-  for var in vars_:
-    if not var.shape.is_fully_defined():
-      message = "Trainable variable '{}' has undefined shape '{}'."
-      raise ValueError(message.format(var.name, var.shape))
-    shapes.append(var.shape.as_list())
-  return int(sum(np.prod(shape) for shape in shapes))
+    if scope:
+        scope = scope if scope.endswith('/') else scope + '/'
+    graph = graph or tf.get_default_graph()
+    vars_ = graph.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+    if scope:
+        vars_ = [var for var in vars_ if var.name.startswith(scope)]
+    if exclude:
+        exclude = re.compile(exclude)
+        vars_ = [var for var in vars_ if not exclude.match(var.name)]
+    shapes = []
+    for var in vars_:
+        if not var.shape.is_fully_defined():
+            message = "Trainable variable '{}' has undefined shape '{}'."
+            raise ValueError(message.format(var.name, var.shape))
+        shapes.append(var.shape.as_list())
+    return int(sum(np.prod(shape) for shape in shapes))

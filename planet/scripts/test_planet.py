@@ -30,102 +30,102 @@ from planet.scripts import train
 
 class PlanetTest(tf.test.TestCase):
 
-  def test_dummy_isolate_none(self):
-    args = tools.AttrDict(
-        logdir=self.get_temp_dir(),
-        num_runs=1,
-        config='debug',
-        params=tools.AttrDict(
-            task='dummy',
-            isolate_envs='none',
-            max_steps=30),
-        ping_every=0,
-        resume_runs=False)
-    try:
-      tf.app.run(lambda _: train.main(args), [sys.argv[0]])
-    except SystemExit:
-      pass
+    def test_dummy_isolate_none(self):
+        args = tools.AttrDict(
+            logdir=self.get_temp_dir(),
+            num_runs=1,
+            config='debug',
+            params=tools.AttrDict(
+                task='dummy',
+                isolate_envs='none',
+                max_steps=30),
+            ping_every=0,
+            resume_runs=False)
+        try:
+            tf.app.run(lambda _: train.main(args), [sys.argv[0]])
+        except SystemExit:
+            pass
 
-  def test_dummy_isolate_thread(self):
-    args = tools.AttrDict(
-        logdir=self.get_temp_dir(),
-        num_runs=1,
-        config='debug',
-        params=tools.AttrDict(
-            task='dummy',
-            isolate_envs='thread',
-            max_steps=30),
-        ping_every=0,
-        resume_runs=False)
-    try:
-      tf.app.run(lambda _: train.main(args), [sys.argv[0]])
-    except SystemExit:
-      pass
+    def test_dummy_isolate_thread(self):
+        args = tools.AttrDict(
+            logdir=self.get_temp_dir(),
+            num_runs=1,
+            config='debug',
+            params=tools.AttrDict(
+                task='dummy',
+                isolate_envs='thread',
+                max_steps=30),
+            ping_every=0,
+            resume_runs=False)
+        try:
+            tf.app.run(lambda _: train.main(args), [sys.argv[0]])
+        except SystemExit:
+            pass
 
-  def test_dummy_isolate_process(self):
-    args = tools.AttrDict(
-        logdir=self.get_temp_dir(),
-        num_runs=1,
-        config='debug',
-        params=tools.AttrDict(
-            task='dummy',
-            isolate_envs='process',
-            max_steps=30),
-        ping_every=0,
-        resume_runs=False)
-    try:
-      tf.app.run(lambda _: train.main(args), [sys.argv[0]])
-    except SystemExit:
-      pass
+    def test_dummy_isolate_process(self):
+        args = tools.AttrDict(
+            logdir=self.get_temp_dir(),
+            num_runs=1,
+            config='debug',
+            params=tools.AttrDict(
+                task='dummy',
+                isolate_envs='process',
+                max_steps=30),
+            ping_every=0,
+            resume_runs=False)
+        try:
+            tf.app.run(lambda _: train.main(args), [sys.argv[0]])
+        except SystemExit:
+            pass
 
-  def test_dm_control_isolate_none(self):
-    args = tools.AttrDict(
-        logdir=self.get_temp_dir(),
-        num_runs=1,
-        config='debug',
-        params=tools.AttrDict(
-            task='cup_catch',
-            isolate_envs='none',
-            max_steps=30),
-        ping_every=0,
-        resume_runs=False)
-    try:
-      tf.app.run(lambda _: train.main(args), [sys.argv[0]])
-    except SystemExit:
-      pass
+    def test_dm_control_isolate_none(self):
+        args = tools.AttrDict(
+            logdir=self.get_temp_dir(),
+            num_runs=1,
+            config='debug',
+            params=tools.AttrDict(
+                task='cup_catch',
+                isolate_envs='none',
+                max_steps=30),
+            ping_every=0,
+            resume_runs=False)
+        try:
+            tf.app.run(lambda _: train.main(args), [sys.argv[0]])
+        except SystemExit:
+            pass
 
-  def test_dm_control_isolate_thread(self):
-    args = tools.AttrDict(
-        logdir=self.get_temp_dir(),
-        num_runs=1,
-        config='debug',
-        params=tools.AttrDict(
-            task='cup_catch',
-            isolate_envs='thread',
-            max_steps=30),
-        ping_every=0,
-        resume_runs=False)
-    try:
-      tf.app.run(lambda _: train.main(args), [sys.argv[0]])
-    except SystemExit:
-      pass
+    def test_dm_control_isolate_thread(self):
+        args = tools.AttrDict(
+            logdir=self.get_temp_dir(),
+            num_runs=1,
+            config='debug',
+            params=tools.AttrDict(
+                task='cup_catch',
+                isolate_envs='thread',
+                max_steps=30),
+            ping_every=0,
+            resume_runs=False)
+        try:
+            tf.app.run(lambda _: train.main(args), [sys.argv[0]])
+        except SystemExit:
+            pass
 
-  def test_dm_control_isolate_process(self):
-    args = tools.AttrDict(
-        logdir=self.get_temp_dir(),
-        num_runs=1,
-        config='debug',
-        params=tools.AttrDict(
-            task='cup_catch',
-            isolate_envs='process',
-            max_steps=30),
-        ping_every=0,
-        resume_runs=False)
-    try:
-      tf.app.run(lambda _: train.main(args), [sys.argv[0]])
-    except SystemExit:
-      pass
+    def test_dm_control_isolate_process(self):
+        args = tools.AttrDict(
+            logdir=self.get_temp_dir(),
+            num_runs=1,
+            config='debug',
+            params=tools.AttrDict(
+                task='cup_catch',
+                isolate_envs='process',
+                max_steps=30),
+            ping_every=0,
+            resume_runs=False)
+        try:
+            tf.app.run(lambda _: train.main(args), [sys.argv[0]])
+        except SystemExit:
+            pass
 
 
 if __name__ == '__main__':
-  tf.test.main()
+    tf.test.main()

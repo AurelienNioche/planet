@@ -24,43 +24,43 @@ import tensorflow as tf
 
 
 class InGraphBatchEnv(object):
-  """Batch of environments inside the TensorFlow graph.
+    """Batch of environments inside the TensorFlow graph.
 
   The batch of environments will be stepped and reset inside of the graph using
   a tf.py_func(). The current batch of observations, actions, rewards, and done
   flags are held in according variables.
   """
 
-  def __init__(self, batch_env):
-    """Batch of environments inside the TensorFlow graph.
+    def __init__(self, batch_env):
+        """Batch of environments inside the TensorFlow graph.
 
     Args:
       batch_env: Batch environment.
     """
-    self._batch_env = batch_env
-    batch_dims = (len(self._batch_env),)
-    observ_shape = self._parse_shape(self._batch_env.observation_space)
-    observ_dtype = self._parse_dtype(self._batch_env.observation_space)
-    action_shape = self._parse_shape(self._batch_env.action_space)
-    action_dtype = self._parse_dtype(self._batch_env.action_space)
-    with tf.variable_scope('env_temporary'):
-      self._observ = tf.get_variable(
-          'observ', batch_dims + observ_shape, observ_dtype,
-          tf.constant_initializer(0), trainable=False)
-      self._action = tf.get_variable(
-          'action', batch_dims + action_shape, action_dtype,
-          tf.constant_initializer(0), trainable=False)
-      self._reward = tf.get_variable(
-          'reward', batch_dims, tf.float32,
-          tf.constant_initializer(0), trainable=False)
-      # This variable should be boolean, but tf.scatter_update() does not
-      # support boolean resource variables yet.
-      self._done = tf.get_variable(
-          'done', batch_dims, tf.int32,
-          tf.constant_initializer(False), trainable=False)
+        self._batch_env = batch_env
+        batch_dims = (len(self._batch_env),)
+        observ_shape = self._parse_shape(self._batch_env.observation_space)
+        observ_dtype = self._parse_dtype(self._batch_env.observation_space)
+        action_shape = self._parse_shape(self._batch_env.action_space)
+        action_dtype = self._parse_dtype(self._batch_env.action_space)
+        with tf.compat.v1.variable_scope('env_temporary'):
+            self._observ = tf.compat.v1.get_variable(
+                'observ', batch_dims + observ_shape, observ_dtype,
+                tf.constant_initializer(0), trainable=False)
+            self._action = tf.compat.v1.get_variable(
+                'action', batch_dims + action_shape, action_dtype,
+                tf.constant_initializer(0), trainable=False)
+            self._reward = tf.compat.v1.get_variable(
+                'reward', batch_dims, tf.float32,
+                tf.constant_initializer(0), trainable=False)
+            # This variable should be boolean, but tf.scatter_update() does not
+            # support boolean resource variables yet.
+            self._done = tf.compat.v1.get_variable(
+                'done', batch_dims, tf.int32,
+                tf.constant_initializer(False), trainable=False)
 
-  def __getattr__(self, name):
-    """Forward unimplemented attributes to one of the original environments.
+    def __getattr__(self, name):
+        """Forward unimplemented attributes to one of the original environments.
 
     Args:
       name: Attribute that was accessed.
@@ -68,18 +68,18 @@ class InGraphBatchEnv(object):
     Returns:
       Value behind the attribute name in one of the original environments.
     """
-    return getattr(self._batch_env, name)
+        return getattr(self._batch_env, name)
 
-  def __len__(self):
-    """Number of combined environments."""
-    return len(self._batch_env)
+    def __len__(self):
+        """Number of combined environments."""
+        return len(self._batch_env)
 
-  def __getitem__(self, index):
-    """Access an underlying environment by index."""
-    return self._batch_env[index]
+    def __getitem__(self, index):
+        """Access an underlying environment by index."""
+        return self._batch_env[index]
 
-  def step(self, action):
-    """Step the batch of environments.
+    def step(self, action):
+        """Step the batch of environments.
 
     The results of the step can be accessed from the variables defined below.
 
@@ -89,20 +89,20 @@ class InGraphBatchEnv(object):
     Returns:
       Operation.
     """
-    with tf.name_scope('environment/simulate'):
-      observ_dtype = self._parse_dtype(self._batch_env.observation_space)
-      observ, reward, done = tf.py_func(
-          lambda a: self._batch_env.step(a)[:3], [action],
-          [observ_dtype, tf.float32, tf.bool], name='step')
-      # reward = tf.cast(reward, tf.float32)
-      return tf.group(
-          self._observ.assign(observ),
-          self._action.assign(action),
-          self._reward.assign(reward),
-          self._done.assign(tf.to_int32(done)))
+        with tf.name_scope('environment/simulate'):
+            observ_dtype = self._parse_dtype(self._batch_env.observation_space)
+            observ, reward, done = tf.compat.v1.py_func(
+                lambda a: self._batch_env.step(a)[:3], [action],
+                [observ_dtype, tf.float32, tf.bool], name='step')
+            # reward = tf.cast(reward, tf.float32)
+            return tf.group(
+                self._observ.assign(observ),
+                self._action.assign(action),
+                self._reward.assign(reward),
+                self._done.assign(tf.compat.v1.to_int32(done)))
 
-  def reset(self, indices=None):
-    """Reset the batch of environments.
+    def reset(self, indices=None):
+        """Reset the batch of environments.
 
     Args:
       indices: The batch indices of the environments to reset; defaults to all.
@@ -110,45 +110,45 @@ class InGraphBatchEnv(object):
     Returns:
       Batch tensor of the new observations.
     """
-    if indices is None:
-      indices = tf.range(len(self._batch_env))
-    observ_dtype = self._parse_dtype(self._batch_env.observation_space)
-    observ = tf.py_func(
-        self._batch_env.reset, [indices], observ_dtype, name='reset')
-    reward = tf.zeros_like(indices, tf.float32)
-    done = tf.zeros_like(indices, tf.int32)
-    with tf.control_dependencies([
-        tf.scatter_update(self._observ, indices, observ),
-        tf.scatter_update(self._reward, indices, reward),
-        tf.scatter_update(self._done, indices, tf.to_int32(done))]):
-      return tf.identity(observ)
+        if indices is None:
+            indices = tf.range(len(self._batch_env))
+        observ_dtype = self._parse_dtype(self._batch_env.observation_space)
+        observ = tf.compat.v1.py_func(
+            self._batch_env.reset, [indices], observ_dtype, name='reset')
+        reward = tf.zeros_like(indices, tf.float32)
+        done = tf.zeros_like(indices, tf.int32)
+        with tf.control_dependencies([
+            tf.compat.v1.scatter_update(self._observ, indices, observ),
+            tf.compat.v1.scatter_update(self._reward, indices, reward),
+            tf.compat.v1.scatter_update(self._done, indices, tf.compat.v1.to_int32(done))]):
+            return tf.identity(observ)
 
-  @property
-  def observ(self):
-    """Access the variable holding the current observation."""
-    return self._observ + 0
+    @property
+    def observ(self):
+        """Access the variable holding the current observation."""
+        return self._observ + 0
 
-  @property
-  def action(self):
-    """Access the variable holding the last received action."""
-    return self._action + 0
+    @property
+    def action(self):
+        """Access the variable holding the last received action."""
+        return self._action + 0
 
-  @property
-  def reward(self):
-    """Access the variable holding the current reward."""
-    return self._reward + 0
+    @property
+    def reward(self):
+        """Access the variable holding the current reward."""
+        return self._reward + 0
 
-  @property
-  def done(self):
-    """Access the variable indicating whether the episode is done."""
-    return tf.cast(self._done, tf.bool)
+    @property
+    def done(self):
+        """Access the variable indicating whether the episode is done."""
+        return tf.cast(self._done, tf.bool)
 
-  def close(self):
-    """Send close messages to the external process and join them."""
-    self._batch_env.close()
+    def close(self):
+        """Send close messages to the external process and join them."""
+        self._batch_env.close()
 
-  def _parse_shape(self, space):
-    """Get a tensor shape from a OpenAI Gym space.
+    def _parse_shape(self, space):
+        """Get a tensor shape from a OpenAI Gym space.
 
     Args:
       space: Gym space.
@@ -159,14 +159,14 @@ class InGraphBatchEnv(object):
     Returns:
       Shape tuple.
     """
-    if isinstance(space, gym.spaces.Discrete):
-      return ()
-    if isinstance(space, gym.spaces.Box):
-      return space.shape
-    raise NotImplementedError("Unsupported space '{}.'".format(space))
+        if isinstance(space, gym.spaces.Discrete):
+            return ()
+        if isinstance(space, gym.spaces.Box):
+            return space.shape
+        raise NotImplementedError("Unsupported space '{}.'".format(space))
 
-  def _parse_dtype(self, space):
-    """Get a tensor dtype from a OpenAI Gym space.
+    def _parse_dtype(self, space):
+        """Get a tensor dtype from a OpenAI Gym space.
 
     Args:
       space: Gym space.
@@ -177,11 +177,11 @@ class InGraphBatchEnv(object):
     Returns:
       TensorFlow data type.
     """
-    if isinstance(space, gym.spaces.Discrete):
-      return tf.int32
-    if isinstance(space, gym.spaces.Box):
-      if space.low.dtype == np.uint8:
-        return tf.uint8
-      else:
-        return tf.float32
-    raise NotImplementedError()
+        if isinstance(space, gym.spaces.Discrete):
+            return tf.int32
+        if isinstance(space, gym.spaces.Box):
+            if space.low.dtype == np.uint8:
+                return tf.uint8
+            else:
+                return tf.float32
+        raise NotImplementedError()
