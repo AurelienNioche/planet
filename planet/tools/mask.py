@@ -52,5 +52,5 @@ def mask(tensor, mask=None, length=None, value=0, debug=False):
         mask = tf.tile(mask, multiples)
         masked = tf.where(mask, tensor, value * tf.ones_like(tensor))
         if debug:
-            masked = tf.check_numerics(masked, 'masked')
+            masked = tf.debugging.check_numerics(masked, 'masked')
         return masked

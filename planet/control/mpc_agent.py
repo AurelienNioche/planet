@@ -22,6 +22,18 @@ import tensorflow as tf
 from planet.tools import nested
 
 
+def var_like(x):
+
+    # def initializer(*_, **__):
+    #     return tf.compat.v1.zeros_like(x)
+
+    return tf.compat.v1.get_local_variable(
+            x.name.split(':')[0].replace('/', '_') + '_var',
+            shape=x.shape,
+            # initializer=lambda: tf.compat.v1.zeros_like(x),
+            use_resource=True)
+
+
 class MPCAgent(object):
 
     def __init__(self, batch_env, step, is_training, should_log, config):
@@ -32,10 +44,10 @@ class MPCAgent(object):
         self._config = config
         self._cell = config.cell
         state = self._cell.zero_state(len(batch_env), tf.float32)
-        var_like = lambda x: tf.compat.v1.get_local_variable(
-            x.name.split(':')[0].replace('/', '_') + '_var',
-            shape=x.shape,
-            initializer=lambda *_, **__: tf.compat.v1.zeros_like(x), use_resource=True)
+        # var_like = lambda x: tf.compat.v1.get_local_variable(
+        #     x.name.split(':')[0].replace('/', '_') + '_var',
+        #     shape=x.shape,
+        #     initializer=lambda *_, **__: tf.compat.v1.zeros_like(x), use_resource=True)
         self._state = nested.map(var_like, state)
         self._prev_action = tf.compat.v1.get_local_variable(
             'prev_action_var', shape=self._batch_env.action.shape,

@@ -67,20 +67,20 @@ def plot_summary(titles, lines, labels, name):
         plt.close(fig)
         return image
 
-    image = tf.py_func(body_fn, (lines,), tf.uint8)
+    image = tf.compat.v1.py_func(body_fn, (lines,), tf.uint8)
     image = image[None]
-    summary = tf.summary.image(name, image)
+    summary = tf.compat.v1.summary.image(name, image)
     return summary
 
 
 def data_summaries(data, postprocess_fn, histograms=False, name='data'):
     summaries = []
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         if histograms:
             for key, value in data.items():
                 if key in ('image',):
                     continue
-                summaries.append(tf.summary.histogram(key, data[key]))
+                summaries.append(tf.compat.v1.summary.histogram(key, data[key]))
         image = data['image']
         if postprocess_fn:
             image = postprocess_fn(image)
@@ -91,9 +91,9 @@ def data_summaries(data, postprocess_fn, histograms=False, name='data'):
 
 def dataset_summaries(directory, name='dataset'):
     summaries = []
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         episodes = count_dataset.count_dataset(directory)
-        summaries.append(tf.summary.scalar('episodes', episodes))
+        summaries.append(tf.compat.v1.summary.scalar('episodes', episodes))
     return summaries
 
 
@@ -105,56 +105,56 @@ def state_summaries(
     posterior = cell.dist_from_state(posterior, mask)
     prior_entropy = prior.entropy()
     posterior_entropy = posterior.entropy()
-    nan_to_num = lambda x: tf.where(tf.is_nan(x), tf.zeros_like(x), x)
-    with tf.variable_scope(name):
+    nan_to_num = lambda x: tf.where(tf.compat.v1.is_nan(x), tf.compat.v1.zeros_like(x), x)
+    with tf.compat.v1.variable_scope(name):
         if histograms:
-            summaries.append(tf.summary.histogram(
+            summaries.append(tf.compat.v1.summary.histogram(
                 'prior_entropy_hist', nan_to_num(prior_entropy)))
-        summaries.append(tf.summary.scalar(
+        summaries.append(tf.compat.v1.summary.scalar(
             'prior_entropy', tf.reduce_mean(prior_entropy)))
-        summaries.append(tf.summary.scalar(
+        summaries.append(tf.compat.v1.summary.scalar(
             'prior_std', tf.reduce_mean(prior.stddev())))
         if histograms:
-            summaries.append(tf.summary.histogram(
+            summaries.append(tf.compat.v1.summary.histogram(
                 'posterior_entropy_hist', nan_to_num(posterior_entropy)))
-        summaries.append(tf.summary.scalar(
+        summaries.append(tf.compat.v1.summary.scalar(
             'posterior_entropy', tf.reduce_mean(posterior_entropy)))
-        summaries.append(tf.summary.scalar(
+        summaries.append(tf.compat.v1.summary.scalar(
             'posterior_std', tf.reduce_mean(posterior.stddev())))
-        summaries.append(tf.summary.scalar(
+        summaries.append(tf.compat.v1.summary.scalar(
             'divergence', tf.reduce_mean(divergence)))
     return summaries
 
 
 def dist_summaries(dists, obs, mask, name='dist_summaries'):
     summaries = []
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         for name, dist in dists.items():
             mode = dist.mode()
             mode_mean, mode_var = tf.nn.moments(mode,
                                                 list(range(mode.shape.ndims)))
             mode_std = tf.sqrt(mode_var)
-            summaries.append(tf.summary.scalar(name + '_mode_mean', mode_mean))
-            summaries.append(tf.summary.scalar(name + '_mode_std', mode_std))
+            summaries.append(tf.compat.v1.summary.scalar(name + '_mode_mean', mode_mean))
+            summaries.append(tf.compat.v1.summary.scalar(name + '_mode_std', mode_std))
             std = dist.stddev()
             std_mean, std_var = tf.nn.moments(std,
                                               list(range(std.shape.ndims)))
             std_std = tf.sqrt(std_var)
-            summaries.append(tf.summary.scalar(name + '_std_mean', std_mean))
-            summaries.append(tf.summary.scalar(name + '_std_std', std_std))
+            summaries.append(tf.compat.v1.summary.scalar(name + '_std_mean', std_mean))
+            summaries.append(tf.compat.v1.summary.scalar(name + '_std_std', std_std))
             if name in obs:
                 log_prob = tf.reduce_mean(dist.log_prob(obs[name]))
                 summaries.append(
-                    tf.summary.scalar(name + '_log_prob', log_prob))
+                    tf.compat.v1.summary.scalar(name + '_log_prob', log_prob))
                 abs_error = tf.reduce_mean(tf.abs(dist.mode() - obs[name]))
                 summaries.append(
-                    tf.summary.scalar(name + '_abs_error', abs_error))
+                    tf.compat.v1.summary.scalar(name + '_abs_error', abs_error))
     return summaries
 
 
 def image_summaries(dist, target, name='image', max_batch=10):
     summaries = []
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         empty_frame = 0 * target[:max_batch, :1]
         image = dist.mode()[:max_batch]
         target = target[:max_batch]
@@ -179,16 +179,16 @@ def image_summaries(dist, target, name='image', max_batch=10):
 
 def objective_summaries(objectives, name='objectives'):
     summaries = []
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         for objective in objectives:
             summaries.append(
-                tf.summary.scalar(objective.name, objective.value))
+                tf.compat.v1.summary.scalar(objective.name, objective.value))
     return summaries
 
 
 def prediction_summaries(dists, data, state, name='state'):
     summaries = []
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         # Predictions.
         log_probs = {}
         for key, dist in dists.items():

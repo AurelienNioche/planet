@@ -28,7 +28,7 @@ def define_summaries(graph, config, cleanups):
     summaries = []
     plot_summaries = []  # Control dependencies for non thread-safe matplot.
     length = graph.data['length']
-    mask = tf.range(graph.embedded.shape[1].value)[None, :] < length[:, None]
+    mask = tf.range(graph.embedded.shape[1])[None, :] < length[:, None]
     heads = graph.heads.copy()
     last_time = tf.Variable(lambda: tf.timestamp(), trainable=False)
     last_step = tf.Variable(lambda: 0.0, trainable=False, dtype=tf.float64)
@@ -42,11 +42,11 @@ def define_summaries(graph, config, cleanups):
     heads['image'] = lambda features: transform(graph.heads['image'](features))
     heads.lock()
 
-    with tf.variable_scope('general'):
+    with tf.compat.v1.variable_scope('general'):
         summaries += summary.data_summaries(graph.data, config.postprocess_fn)
         summaries += summary.dataset_summaries(config.train_dir)
         summaries += summary.objective_summaries(graph.objectives)
-        summaries.append(tf.summary.scalar('step', graph.step))
+        summaries.append(tf.compat.v1.summary.scalar('step', graph.step))
         new_time, new_step = tf.timestamp(), tf.cast(graph.global_step,
                                                      tf.float64)
         delta_time, delta_step = new_time - last_time, new_step - last_step
@@ -54,17 +54,17 @@ def define_summaries(graph, config, cleanups):
             assign_ops = [last_time.assign(new_time),
                           last_step.assign(new_step)]
             with tf.control_dependencies(assign_ops):
-                summaries.append(tf.summary.scalar(
+                summaries.append(tf.compat.v1.summary.scalar(
                     'steps_per_second', delta_step / delta_time))
-                summaries.append(tf.summary.scalar(
+                summaries.append(tf.compat.v1.summary.scalar(
                     'seconds_per_step', delta_time / delta_step))
 
-    with tf.variable_scope('closedloop'):
+    with tf.compat.v1.variable_scope('closedloop'):
         prior, posterior = tools.unroll.closed_loop(
             graph.cell, graph.embedded, graph.data['action'], config.debug)
         summaries += summary.state_summaries(graph.cell, prior, posterior,
                                              mask)
-        with tf.variable_scope('prior'):
+        with tf.compat.v1.variable_scope('prior'):
             prior_features = graph.cell.features_from_state(prior)
             prior_dists = {
                 name: head(prior_features)
@@ -73,7 +73,7 @@ def define_summaries(graph, config, cleanups):
             summaries += summary.image_summaries(
                 prior_dists['image'],
                 config.postprocess_fn(graph.data['image']))
-        with tf.variable_scope('posterior'):
+        with tf.compat.v1.variable_scope('posterior'):
             posterior_features = graph.cell.features_from_state(posterior)
             posterior_dists = {
                 name: head(posterior_features)
@@ -84,7 +84,7 @@ def define_summaries(graph, config, cleanups):
                 posterior_dists['image'],
                 config.postprocess_fn(graph.data['image']))
 
-    with tf.variable_scope('openloop'):
+    with tf.compat.v1.variable_scope('openloop'):
         state = tools.unroll.open_loop(
             graph.cell, graph.embedded, graph.data['action'],
             config.open_loop_context, config.debug)
@@ -102,13 +102,13 @@ def define_summaries(graph, config, cleanups):
             plot_summaries += plot_summary
             summaries += plot_summary
 
-    with tf.variable_scope('simulation'):
+    with tf.compat.v1.variable_scope('simulation'):
         sim_returns = []
         for name, params in config.test_collects.items():
             # These are expensive and equivalent for train and test phases, so only
             # do one of them.
-            sim_summary, sim_return = tf.cond(
-                tf.equal(graph.phase, 'test'),
+            sim_summary, sim_return = tf.compat.v1.cond(
+                tf.compat.v1.equal(graph.phase, 'test'),
                 lambda: utility.simulate_episodes(
                     config, params, graph, cleanups,
                     expensive_summaries=False,
@@ -119,6 +119,6 @@ def define_summaries(graph, config, cleanups):
             summaries.append(sim_summary)
             sim_returns.append(sim_return)
 
-    summaries = tf.summary.merge(summaries)
+    summaries = tf.compat.v1.summary.merge(summaries)
     score = tf.reduce_mean(sim_returns)[None]
     return summaries, score

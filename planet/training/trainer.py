@@ -143,7 +143,7 @@ class Trainer(object):
         feed = feed or {}
         if not score.shape.ndims:
             score = score[None]
-        writer = self._logdir and tf.summary.FileWriter(
+        writer = self._logdir and tf.compat.v1.summary.FileWriter(
             os.path.join(self._logdir, name),
             tf.compat.v1.get_default_graph(), flush_secs=30)
         op = self._define_step(name, batch_size, score, summary)
@@ -189,7 +189,7 @@ class Trainer(object):
                 if steps_in % phase.steps < phase.batch_size:
                     message = '\n' + ('-' * 50) + '\n'
                     message += 'Epoch {} phase {} (phase step {}, global step {}).'
-                    tf.logging.info(message.format(
+                    tf.compat.v1.logging.info(message.format(
                         epoch + 1, phase.name, phase_step, global_step))
                 # Populate book keeping tensors.
                 phase.feed[self._step] = phase_step
@@ -207,7 +207,7 @@ class Trainer(object):
                         self._store_checkpoint(sess, saver, global_step)
                 if self._is_every_steps(
                         phase_step, phase.batch_size, phase.report_every):
-                    tf.logging.info('Score {}.'.format(mean_score))
+                    tf.compat.v1.logging.info('Score {}.'.format(mean_score))
                     yield mean_score
                 if summary and phase.writer:
                     # We want smaller phases to catch up at the beginnig of each epoch so
@@ -271,7 +271,7 @@ class Trainer(object):
       Tuple of summary tensor, mean score, and new global step. The mean score
       is zero for non reporting steps.
     """
-        with tf.variable_scope('phase_{}'.format(name)):
+        with tf.compat.v1.variable_scope('phase_{}'.format(name)):
             score_mean = tools.StreamingMean((), tf.float32, 'score_mean')
             score.set_shape((None,))
             with tf.control_dependencies([score, summary]):
@@ -280,7 +280,7 @@ class Trainer(object):
                 mean_score = tf.cond(self._report, score_mean.clear, float)
                 summary = tf.cond(
                     self._report,
-                    lambda: tf.summary.merge([summary, tf.summary.scalar(
+                    lambda: tf.compat.v1.summary.merge([summary, tf.compat.v1.summary.scalar(
                         name + '/score', mean_score, family='trainer')]),
                     lambda: summary)
                 next_step = self._global_step.assign_add(batch_size)
@@ -296,12 +296,12 @@ class Trainer(object):
     Returns:
       Session.
     """
-        config = tf.ConfigProto()
+        config = tf.compat.v1.ConfigProto()
         config.gpu_options.allow_growth = True
         try:
-            return tf.Session('local', config=config)
+            return tf.compat.v1.Session('local', config=config)
         except tf.errors.NotFoundError:
-            return tf.Session(config=config)
+            return tf.compat.v1.Session(config=config)
 
     def _initialize_variables(self, sess, savers, logdirs, checkpoints):
         """Initialize or restore variables from a checkpoint if available.
@@ -313,8 +313,8 @@ class Trainer(object):
       checkpoints: List of checkpoint names for each saver; None for newest.
     """
         sess.run(tf.group(
-            tf.local_variables_initializer(),
-            tf.global_variables_initializer()))
+            tf.compat.v1.local_variables_initializer(),
+            tf.compat.v1.global_variables_initializer()))
         assert len(savers) == len(logdirs) == len(checkpoints)
         for i, (saver, logdir, checkpoint) in enumerate(
                 zip(savers, logdirs, checkpoints)):
@@ -339,6 +339,6 @@ class Trainer(object):
     """
         if not self._logdir or not saver:
             return
-        tf.gfile.MakeDirs(self._logdir)
+        tf.io.gfile.makedirs(self._logdir)
         filename = os.path.join(self._logdir, 'model.ckpt')
         saver.save(sess, filename, global_step)

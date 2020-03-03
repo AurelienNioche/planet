@@ -33,12 +33,12 @@ class StreamingMean(object):
       dtype: Data type of the mean to compute.
     """
         self._dtype = dtype
-        with tf.variable_scope(name):
-            self._sum = tf.get_variable(
+        with tf.compat.v1.variable_scope(name):
+            self._sum = tf.compat.v1.get_variable(
                 'sum', shape, dtype,
                 tf.constant_initializer(0),
                 trainable=False)
-            self._count = tf.get_variable(
+            self._count = tf.compat.v1.get_variable(
                 'count', (), tf.int32,
                 tf.constant_initializer(0),
                 trainable=False)

@@ -69,7 +69,7 @@ def define_model(data, trainer, config):
                     step, config.batch_shape[0],
                     params.steps_after, params.steps_every, params.steps_until)
                 summary, _ = tf.cond(
-                    tf.logical_and(tf.equal(trainer.phase, 'train'), schedule),
+                    tf.logical_and(tf.compat.v1.equal(trainer.phase, 'train'), schedule),
                     functools.partial(
                         utility.simulate_episodes, config, params, graph,
                         cleanups,

@@ -326,7 +326,7 @@ def print_metrics(metrics, step, every, name='metrics'):
     with tf.control_dependencies(updates):
         # message = 'step/' + '/'.join(metrics.keys()) + ' = '
         message = '{}: step/{} ='.format(name, '/'.join(metrics.keys()))
-        gs = tf.train.get_or_create_global_step()
+        gs = tf.compat.v1.train.get_or_create_global_step()
         print_metrics = tf.cond(
             tf.equal(step % every, 0),
             lambda: tf.print(message, [gs] + [mean.clear() for mean in means]),

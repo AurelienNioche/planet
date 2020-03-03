@@ -115,12 +115,12 @@ class InGraphBatchEnv(object):
         observ_dtype = self._parse_dtype(self._batch_env.observation_space)
         observ = tf.compat.v1.py_func(
             self._batch_env.reset, [indices], observ_dtype, name='reset')
-        reward = tf.zeros_like(indices, tf.float32)
-        done = tf.zeros_like(indices, tf.int32)
+        reward = tf.compat.v1.zeros_like(indices, tf.float32)
+        done = tf.compat.v1.zeros_like(indices, tf.int32)
         with tf.control_dependencies([
-            tf.compat.v1.scatter_update(self._observ, indices, observ),
-            tf.compat.v1.scatter_update(self._reward, indices, reward),
-            tf.compat.v1.scatter_update(self._done, indices, tf.compat.v1.to_int32(done))]):
+                tf.compat.v1.scatter_update(self._observ, indices, observ),
+                tf.compat.v1.scatter_update(self._reward, indices, reward),
+                tf.compat.v1.scatter_update(self._done, indices, tf.compat.v1.to_int32(done))]):
             return tf.identity(observ)
 
     @property
