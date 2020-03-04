@@ -19,6 +19,9 @@ from __future__ import print_function
 import collections
 import os
 
+from tensorflow.core.protobuf import \
+    rewriter_config_pb2
+
 import tensorflow as tf
 
 from planet import tools
@@ -297,6 +300,10 @@ class Trainer(object):
       Session.
     """
         config = tf.compat.v1.ConfigProto()
+
+        off = rewriter_config_pb2.RewriterConfig.OFF
+        config.graph_options.rewrite_options.arithmetic_optimization = off
+
         config.gpu_options.allow_growth = True
         try:
             return tf.compat.v1.Session('local', config=config)

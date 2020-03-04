@@ -120,7 +120,8 @@ class InGraphBatchEnv(object):
         with tf.control_dependencies([
                 tf.compat.v1.scatter_update(self._observ, indices, observ),
                 tf.compat.v1.scatter_update(self._reward, indices, reward),
-                tf.compat.v1.scatter_update(self._done, indices, tf.compat.v1.to_int32(done))]):
+                tf.compat.v1.scatter_update(self._done, indices,
+                                            tf.compat.v1.to_int32(done))]):
             return tf.identity(observ)
 
     @property
