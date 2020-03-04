@@ -300,11 +300,11 @@ class Trainer(object):
       Session.
     """
         config = tf.compat.v1.ConfigProto()
+        config.gpu_options.allow_growth = True
 
         off = rewriter_config_pb2.RewriterConfig.OFF
-        config.graph_options.rewrite_options.arithmetic_optimization = off
+        config.graph_options.rewrite_options.memory_optimization = off
 
-        config.gpu_options.allow_growth = True
         try:
             return tf.compat.v1.Session('local', config=config)
         except tf.errors.NotFoundError:
